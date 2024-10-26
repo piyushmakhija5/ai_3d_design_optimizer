@@ -13,7 +13,7 @@ class DQN(nn.Module):
             raise ValueError("State dimension must be greater than zero.")
         self.fc = nn.Sequential(
             nn.Linear(state_dim, 128),
-            nn.ReLU(),  
+            nn.ReLU(),
             nn.Linear(128, 64),
             nn.ReLU(),
             nn.Linear(64, action_dim)
