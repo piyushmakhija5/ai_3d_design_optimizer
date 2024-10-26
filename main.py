@@ -20,7 +20,7 @@ def extract_design_params(text):
     response = openai.ChatCompletion.create(
         model="gpt-4o-mini",
         messages=messages,
-        temperature=0.7
+        temperature=0.1
     )
     output = response['choices'][0]['message']['content'].strip()
     return output
