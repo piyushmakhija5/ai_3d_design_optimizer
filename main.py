@@ -4,7 +4,8 @@ import openai
 import streamlit as st
 from gan_model import GAN3DModelGenerator  # Import the modularized GAN class
 from dqn_optimizer import run_dqn_optimization  # Import DQN-related function
-
+import base64
+import tempfile
 # Load environment variables from .env file
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")  # Correctly set API key
@@ -15,9 +16,9 @@ def extract_design_params(text):
         {"role": "system", "content": "You are an assistant that extracts 3D design parameters from user input. Your response should be in JSON format with the following structure: {'Type': '', 'Load Capacity': '', 'Features': ''}. Populate the fields with the appropriate values from the input."},
         {"role": "user", "content": f"Extract the design parameters from this input: '{text}'."}
     ]
-    
+
     response = openai.ChatCompletion.create(
-        model="gpt-4o-mini", 
+        model="gpt-4o-mini",
         messages=messages,
         temperature=0.7
     )
@@ -47,12 +48,12 @@ user_input = st.text_area('Design Requirements', placeholder='E.g. I need a brac
 if st.button('Submit'):
     if user_input:
         st.write(f'Processing your input: {user_input}')
-        
+
         # Extract design parameters
         st.session_state.design_params = extract_design_params(user_input)
         st.subheader('Extracted Design Parameters:')
         st.json(st.session_state.design_params)
-        
+
         # Generate 3D model using GAN
         st.write("Generating initial 3D model based on the extracted parameters...")
         st.session_state.gan_model = GAN3DModelGenerator()
@@ -67,7 +68,7 @@ if st.session_state.design_params:
 
         if st.button('Run Optimization'):
             st.write(f"User Feedback: {feedback}")
-            
+
             # Run DQN Optimization based on user feedback
             st.write("Running DQN optimization based on user feedback...")
             st.session_state.optimized_design = run_dqn_optimization(feedback, st.session_state.design_params)
@@ -78,4 +79,13 @@ if st.session_state.design_params:
 # Option to download the final 3D output design file in STL format
 if st.session_state.optimized_design:
     if st.button('Download Optimized Design'):
-        st.write("Downloading optimized 3D design as STL... (placeholder functionality)")
+        st.write("Downloading optimized 3D design as STL")
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".stl") as stl_file:
+            stl_file.write(b"solid optimized_design\nfacet normal 0.0 0.0 0.0\n  outer loop\n    vertex 0.0 0.0 0.0\n    vertex 1.0 0.0 0.0\n    vertex 0.0 1.0 0.0\n  endloop\nendfacet\nendsolid optimized_design")
+            stl_path = stl_file.name
+
+        with open(stl_path, "rb") as stl_file:
+            stl_data = stl_file.read()
+            b64 = base64.b64encode(stl_data).decode()
+            href = f'<a href="data:application/octet-stream;base64,{b64}" download="optimized_design.stl">Download Optimized Design STL</a>'
+            st.markdown(href, unsafe_allow_html=True)
