@@ -5,7 +5,7 @@ import random
 import json
 import tqdm
 
-# Define DQN Network
+# DQN Network Class
 class DQN(nn.Module):
     def __init__(self, state_dim, action_dim):
         super(DQN, self).__init__()
@@ -13,7 +13,7 @@ class DQN(nn.Module):
             raise ValueError("State dimension must be greater than zero.")
         self.fc = nn.Sequential(
             nn.Linear(state_dim, 128),
-            nn.ReLU(),
+            nn.ReLU(),  
             nn.Linear(128, 64),
             nn.ReLU(),
             nn.Linear(64, action_dim)
