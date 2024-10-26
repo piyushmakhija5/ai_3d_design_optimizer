@@ -17,11 +17,11 @@ class GAN3DModelGenerator:
         self.num_epochs = num_epochs
         self.use_synthetic_data = use_synthetic_data
 
-        # Create models
+        # Initialize Generatore and Dscirminiator
         self.generator = self.Generator(input_dim=z_dim).to(self.device)
         self.discriminator = self.Discriminator().to(self.device)
 
-        # Optimizers
+        # Adam Optimizer
         self.optimizer_G = optim.Adam(self.generator.parameters(), lr=self.lr)
         self.optimizer_D = optim.Adam(self.discriminator.parameters(), lr=self.lr)
 
@@ -38,7 +38,7 @@ class GAN3DModelGenerator:
                 nn.ReLU(),
                 nn.Linear(256, 512),
                 nn.ReLU(),
-                nn.Linear(512, output_dim)  # Assuming 3D coordinates output
+                nn.Linear(512, output_dim)
             )
 
         def forward(self, z):
@@ -64,7 +64,7 @@ class GAN3DModelGenerator:
     def train(self):
         # Training loop for GAN
         for epoch in range(self.num_epochs):
-            # Generate random latent vectors
+            # Generate random latent vectors 
             z = torch.randn(self.batch_size, self.z_dim).to(self.device)
             generated_data = self.generator(z)
 
@@ -73,6 +73,7 @@ class GAN3DModelGenerator:
             fake_labels = torch.zeros(self.batch_size, 1).to(self.device)
 
             self.discriminator.zero_grad()
+            ## If ShapeNet or some other dataset is available use that !!
             if self.use_synthetic_data:
                 # Use synthetic real data if ShapeNet is not available
                 fake_data = torch.randn(self.batch_size, 3).to(self.device)  # Simulated real 3D data
@@ -109,7 +110,6 @@ class GAN3DModelGenerator:
             ax.scatter(generated_model[0], generated_model[1], generated_model[2], c='r', marker='o')
             st.pyplot(fig)
 
-# Post-design generation prompt
 if __name__ == "__main__":
     gan_model = GAN3DModelGenerator()
     gan_model.train()
